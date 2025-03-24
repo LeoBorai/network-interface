@@ -1,4 +1,5 @@
 fn main() {
+    #[cfg(any(target_family = "unix"))]
     {
         use cc::Build;
         use std::path::Path;
