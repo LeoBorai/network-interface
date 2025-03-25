@@ -11,7 +11,7 @@ impl<'a> HexSlice<'a> {
     }
 }
 
-impl<'a> Display for HexSlice<'a> {
+impl Display for HexSlice<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (index, byte) in self.0.iter().enumerate() {
             if index > 0 {
