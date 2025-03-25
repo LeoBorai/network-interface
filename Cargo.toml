@@ -16,7 +16,7 @@ readme = "README.md"
 serde = { version = "1.0.183", features = ["derive"], optional = true}
 thiserror = "1.0"
 
-[target.'cfg(any(target_family = "unix"))'.build-dependencies]
+[target.'cfg(target_family = "unix")'.build-dependencies]
 cc = "1.0.73"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
