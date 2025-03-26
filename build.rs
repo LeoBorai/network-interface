@@ -1,12 +1,5 @@
 fn main() {
-    #[cfg(any(
-        target_os = "macos",
-        target_os = "ios",
-        target_os = "freebsd",
-        target_os = "openbsd",
-        target_os = "netbsd",
-        target_os = "dragonfly"
-    ))]
+    #[cfg(target_family = "unix")]
     {
         use cc::Build;
         use std::path::Path;

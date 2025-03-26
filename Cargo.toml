@@ -16,14 +16,14 @@ readme = "README.md"
 serde = { version = "1.0.183", features = ["derive"], optional = true}
 thiserror = "1.0"
 
+[target.'cfg(target_family = "unix")'.build-dependencies]
+cc = "1.0.73"
+
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 libc = "0.2.101"
 
 [target.'cfg(any(target_os = "ios", target_os = "macos", target_os = "freebsd", target_os = "openbsd", target_os = "netbsd", target_os = "dragonfly"))'.dependencies]
 libc = "0.2.101"
-
-[target.'cfg(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd", target_os = "netbsd", target_os = "dragonfly"))'.build-dependencies]
-cc = "1.0.73"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 libc = "0.2.101"
