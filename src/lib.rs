@@ -7,6 +7,7 @@ mod utils;
 
 pub use error::*;
 pub use interface::*;
+pub use mac_addr::*;
 
 pub type Result<T> = std::result::Result<T, error::Error>;
 

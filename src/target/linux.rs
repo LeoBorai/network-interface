@@ -9,6 +9,7 @@ use libc::{
 use crate::target::getifaddrs;
 use crate::{Error, NetworkInterface, NetworkInterfaceConfig, Result};
 use crate::utils::{ipv4_from_in_addr, ipv6_from_in6_addr, make_ipv4_netmask, make_ipv6_netmask};
+use crate::MacAddr;
 
 impl NetworkInterfaceConfig for NetworkInterface {
     fn show() -> Result<Vec<NetworkInterface>> {
@@ -119,19 +120,15 @@ fn make_ipv6_broadcast_addr(netifa: &libc::ifaddrs) -> Result<Option<Ipv6Addr>> 
     Ok(Some(addr))
 }
 
-fn make_mac_addrs(netifa: &libc::ifaddrs) -> String {
+fn make_mac_addrs(netifa: &libc::ifaddrs) -> MacAddr {
     let netifa_addr = netifa.ifa_addr;
     let socket_addr = netifa_addr as *mut sockaddr_ll;
     let mac_array = unsafe { (*socket_addr).sll_addr };
     let addr_len = unsafe { (*socket_addr).sll_halen };
-    let real_addr_len = std::cmp::min(addr_len as usize, mac_array.len());
-    let mac_slice = unsafe { std::slice::from_raw_parts(mac_array.as_ptr(), real_addr_len) };
-
-    mac_slice
-        .iter()
-        .map(|x| format!("{:02x}", x))
-        .collect::<Vec<_>>()
-        .join(":")
+    let real_addr_len = std::cmp::min(addr_len as usize, 6);
+    let mut mac_octets: [u8; 6] = [0u8; 6];
+    mac_octets[..real_addr_len].copy_from_slice(&mac_array[..real_addr_len]);
+    MacAddr::from(mac_octets)
 }
 
 /// Retreives the name for the the network interface provided

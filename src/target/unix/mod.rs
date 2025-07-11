@@ -11,6 +11,7 @@ use crate::target::ffi::lladdr;
 use crate::target::getifaddrs;
 use crate::{Error, NetworkInterface, NetworkInterfaceConfig, Result};
 use crate::utils::{ipv4_from_in_addr, ipv6_from_in6_addr, make_ipv4_netmask, make_ipv6_netmask};
+use crate::MacAddr;
 
 impl NetworkInterfaceConfig for NetworkInterface {
     fn show() -> Result<Vec<NetworkInterface>> {
@@ -119,19 +120,16 @@ fn make_ipv6_broadcast_addr(netifa: &libc::ifaddrs) -> Result<Option<Ipv6Addr>> 
     Ok(Some(addr))
 }
 
-fn make_mac_addrs(netifa: &libc::ifaddrs) -> String {
-    let mut mac = [0; 6];
+fn make_mac_addrs(netifa: &libc::ifaddrs) -> MacAddr {
+    let mut mac_octets = [0; 6];
     let mut ptr = unsafe { lladdr(netifa as *const libc::ifaddrs as *mut _) };
 
-    for el in &mut mac {
+    for el in &mut mac_octets {
         *el = unsafe { *ptr };
         ptr = ((ptr as usize) + 1) as *const u8;
     }
 
-    format!(
-        "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]
-    )
+    MacAddr::from(mac_octets)
 }
 
 /// Retreives the name for the the network interface provided
