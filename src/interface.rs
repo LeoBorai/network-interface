@@ -5,6 +5,7 @@ use std::fmt::Debug;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use crate::MacAddr;
 
 /// An alias for an `Option` that wraps either a `Ipv4Addr` or a `Ipv6Addr`
 /// representing the IP for a Network Interface netmask
@@ -19,7 +20,7 @@ pub struct NetworkInterface {
     /// Interface's address
     pub addr: Vec<Addr>,
     /// MAC Address
-    pub mac_addr: Option<String>,
+    pub mac_addr: Option<MacAddr>,
     /// Interface's index
     pub index: u32,
 }
@@ -101,7 +102,7 @@ impl NetworkInterface {
         }
     }
 
-    pub fn with_mac_addr(self, mac_addr: Option<String>) -> Self {
+    pub fn with_mac_addr(self, mac_addr: Option<MacAddr>) -> Self {
         Self { mac_addr, ..self }
     }
 }

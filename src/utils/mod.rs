@@ -1,6 +1,3 @@
-#[cfg(windows)]
-pub mod hex;
-
 #[cfg(any(
     target_os = "android",
     target_os = "linux",

@@ -24,10 +24,10 @@ use winapi::{
     },
 };
 
-use crate::utils::hex::HexSlice;
 use crate::utils::ffialloc::FFIAlloc;
 use crate::{Addr, Error, NetworkInterface, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr};
 use crate::interface::Netmask;
+use crate::MacAddr;
 
 /// An alias for `IP_ADAPTER_ADDRESSES`
 type AdapterAddress = IP_ADAPTER_ADDRESSES;
@@ -46,8 +46,6 @@ const GET_ADAPTERS_ADDRESSES_FAMILY: u32 = AF_UNSPEC as u32;
 
 /// A constant to store `winapi::um::iptypes::GAA_FLAG_INCLUDE_PREFIX`
 const GET_ADAPTERS_ADDRESSES_FLAGS: ULONG = winapi::um::iptypes::GAA_FLAG_INCLUDE_PREFIX;
-
-type MacAddress = Option<String>;
 
 macro_rules! iterable_raw_pointer {
     ($t: ty, $n: ident) => {
@@ -280,15 +278,15 @@ fn make_ipv6_netmask(_sockaddr: &SOCKADDR_IN6) -> Netmask<Ipv6Addr> {
 }
 
 /// Creates MacAddress from AdapterAddress
-fn make_mac_address(adapter_address: &AdapterAddress) -> MacAddress {
+fn make_mac_address(adapter_address: &AdapterAddress) -> Option<MacAddr> {
     // see https://docs.microsoft.com/en-us/windows/win32/api/iphlpapi/nf-iphlpapi-getadaptersaddresses#examples
-    let mac_addr_len = adapter_address.PhysicalAddressLength as usize;
-    match mac_addr_len {
-        0 => None,
-        len => Some(format!(
-            "{}",
-            HexSlice::new(&adapter_address.PhysicalAddress[..len])
-        )),
+    let addr_len = adapter_address.PhysicalAddressLength as usize;
+    if addr_len > 0 && addr_len <= 6 {
+        let mut mac_octets = [0u8; 6];
+        mac_octets[..addr_len].copy_from_slice(&adapter_address.PhysicalAddress[..addr_len]);
+        Some(MacAddr::from(mac_octets))
+    } else {
+        None
     }
 }
 
@@ -356,7 +354,11 @@ mod tests {
     fn test_mac_addr() {
         const MAC_ADDR_LEN: usize = "00:22:48:03:ED:76".len();
 
-        let output = Command::new("getmac").arg("/nh").output().unwrap().stdout;
+        let output = Command::new("cmd")
+            .args(["/c", "chcp 65001 > nul && getmac /nh"])
+            .output()
+            .unwrap()
+            .stdout;
         let output_string = String::from_utf8(output).unwrap();
         let mac_addr_list: Vec<_> = output_string
             .lines()
@@ -368,6 +370,7 @@ mod tests {
                     _ => None,
                 }
             })
+            .map(|s| s.parse().unwrap())
             .collect();
         assert!(!mac_addr_list.is_empty());
 
