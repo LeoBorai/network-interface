@@ -4,6 +4,7 @@ fn main() {
         use cc::Build;
         use std::path::Path;
         const TARGET_MACOS: &str = "macos";
+        const TARGET_TVOS: &str = "tvos";
         const TARGET_IOS: &str = "ios";
         const TARGET_FREEBSD: &str = "freebsd";
         const TARGET_OPENBSD: &str = "openbsd";
@@ -14,6 +15,7 @@ fn main() {
         let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
         if [
             TARGET_MACOS,
+            TARGET_TVOS,
             TARGET_IOS,
             TARGET_FREEBSD,
             TARGET_OPENBSD,
