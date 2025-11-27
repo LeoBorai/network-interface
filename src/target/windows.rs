@@ -67,13 +67,13 @@ iterable_raw_pointer!(IP_ADAPTER_UNICAST_ADDRESS, Next);
 iterable_raw_pointer!(IP_ADAPTER_PREFIX, Next);
 
 impl NetworkInterfaceConfig for NetworkInterface {
-    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Result<Vec<NetworkInterface>> {
-        Ok(netifs.into_iter().filter(|netif| {
+    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Vec<NetworkInterface> {
+        netifs.into_iter().filter(|netif| {
             if netif.flags == 0 || flags == 0 {
                 return true;
             }
             netif.flags & flags == flags
-        }).collect())
+        }).collect()
     }
     fn show() -> Result<Vec<NetworkInterface>> {
         // Allocate a 15 KB buffer to start with.
