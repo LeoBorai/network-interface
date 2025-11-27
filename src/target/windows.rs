@@ -138,7 +138,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                 addr: Vec::new(),
                 mac_addr,
                 index,
-                status: status, flags: get_adapter_flags(adapter_address,
+                status: status, flags: get_adapter_flags(adapter_address),
             };
 
             for current_unicast_address in
