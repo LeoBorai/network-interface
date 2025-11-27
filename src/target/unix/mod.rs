@@ -13,13 +13,13 @@ use crate::{Error, NetworkInterface, Status, NetworkInterfaceConfig, Result};
 use crate::utils::{ipv4_from_in_addr, ipv6_from_in6_addr, make_ipv4_netmask, make_ipv6_netmask};
 
 impl NetworkInterfaceConfig for NetworkInterface {
-    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Result<Vec<NetworkInterface>> {
-        Ok(netifs.into_iter().filter(|netif| {
-            if netif.flags == 0 || flags == 0 {
+    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Vec<NetworkInterface> {
+        netifs.into_iter().filter(|netif| {
+            if flags == 0 {
                 return true;
             }
             netif.flags & flags == flags
-        }).collect())
+        }).collect()
     }
     fn show() -> Result<Vec<NetworkInterface>> {
         let mut network_interfaces: HashMap<String, NetworkInterface> = HashMap::new();
