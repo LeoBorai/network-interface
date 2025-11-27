@@ -10,6 +10,42 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 /// representing the IP for a Network Interface netmask
 pub type Netmask<T> = Option<T>;
 
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+pub enum Status {
+    Unknown,      // can not get status
+    Up,
+    Down,
+    Unavailable,  // not up or down
+}
+
+#[cfg(not(target_os = "windows"))]
+pub const IFF_RUNNING: i32 = libc::IFF_RUNNING;
+#[cfg(not(target_os = "windows"))]
+pub const IFF_ETH: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAST;
+#[cfg(not(target_os = "windows"))]
+pub const IFF_WIRELESS: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAST;
+#[cfg(not(target_os = "windows"))]
+pub const IFF_VPN: i32 = libc::IFF_UP | libc::IFF_POINTOPOINT | libc::IFF_NOARP;
+#[cfg(not(target_os = "windows"))]
+pub const IFF_TUN: i32 = libc::IFF_UP | libc::IFF_POINTOPOINT;
+#[cfg(not(target_os = "windows"))]
+pub const IFF_LOOPBACK: i32 = libc::IFF_UP | libc::IFF_LOOPBACK;
+
+#[cfg(target_os = "windows")]
+pub const IFF_RUNNING: i32 = 0x40;
+#[cfg(target_os = "windows")]
+pub const IFF_ETH: i32 = 0x1 | 0x2 | 0x1000;
+#[cfg(target_os = "windows")]
+pub const IFF_WIRELESS: i32 = 0x1 | 0x2 | 0x1000;
+#[cfg(target_os = "windows")]
+pub const IFF_VPN: i32 = 0x1 | 0x10 | 0x80;
+#[cfg(target_os = "windows")]
+pub const IFF_TUN: i32 = 0x1 | 0x10 ;
+#[cfg(target_os = "windows")]
+pub const IFF_LOOPBACK: i32 = 0x1 | 0x8;
+
+// Note: libc::MASTER might not be available, you may need to define it manually
+// pub const IFF_BRIDGE: i32 = libc::IFF_UP | libc::MASTER;
 /// A system's network interface
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -22,6 +58,11 @@ pub struct NetworkInterface {
     pub mac_addr: Option<String>,
     /// Interface's index
     pub index: u32,
+    /// Interface's status
+    pub status: Status,
+    /// Interface's flags
+    pub(crate) flags: i32,
+    
 }
 
 /// Network interface address
@@ -65,6 +106,8 @@ impl NetworkInterface {
         netmask: Netmask<Ipv4Addr>,
         broadcast: Option<Ipv4Addr>,
         index: u32,
+        status: Status,
+        flags: i32,
     ) -> NetworkInterface {
         let ifaddr_v4 = V4IfAddr {
             ip: addr,
@@ -77,6 +120,8 @@ impl NetworkInterface {
             addr: vec![Addr::V4(ifaddr_v4)],
             mac_addr: None,
             index,
+            status,
+            flags,
         }
     }
 
@@ -86,6 +131,8 @@ impl NetworkInterface {
         netmask: Netmask<Ipv6Addr>,
         broadcast: Option<Ipv6Addr>,
         index: u32,
+        status: Status,
+        flags: i32,
     ) -> NetworkInterface {
         let ifaddr_v6 = V6IfAddr {
             ip: addr,
@@ -98,11 +145,16 @@ impl NetworkInterface {
             addr: vec![Addr::V6(ifaddr_v6)],
             mac_addr: None,
             index,
+            status,
+            flags,
         }
     }
 
     pub fn with_mac_addr(self, mac_addr: Option<String>) -> Self {
         Self { mac_addr, ..self }
+    }
+    pub fn is_up(&self) -> bool {
+        self.status == Status::Up
     }
 }
 

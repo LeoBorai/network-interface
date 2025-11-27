@@ -20,13 +20,13 @@ use winapi::{
     },
     um::{
         iptypes::{IP_ADAPTER_ADDRESSES, IP_ADAPTER_UNICAST_ADDRESS, IP_ADAPTER_PREFIX},
-        iphlpapi::GetAdaptersAddresses,
+        iphlpapi::{GetAdaptersAddresses},
     },
 };
 
 use crate::utils::hex::HexSlice;
 use crate::utils::ffialloc::FFIAlloc;
-use crate::{Addr, Error, NetworkInterface, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr};
+use crate::{IFF_ETH, IFF_WIRELESS, IFF_TUN,IFF_LOOPBACK, Addr, Error, NetworkInterface, Status, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr};
 use crate::interface::Netmask;
 
 /// An alias for `IP_ADAPTER_ADDRESSES`
@@ -67,6 +67,14 @@ iterable_raw_pointer!(IP_ADAPTER_UNICAST_ADDRESS, Next);
 iterable_raw_pointer!(IP_ADAPTER_PREFIX, Next);
 
 impl NetworkInterfaceConfig for NetworkInterface {
+    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Result<Vec<NetworkInterface>> {
+        Ok(netifs.into_iter().filter(|netif| {
+            if netif.flags == 0 || flags == 0 {
+                return true;
+            }
+            netif.flags & flags == flags
+        }).collect())
+    }
     fn show() -> Result<Vec<NetworkInterface>> {
         // Allocate a 15 KB buffer to start with.
         let mut buffer_size: u32 = 15000;
@@ -124,11 +132,13 @@ impl NetworkInterfaceConfig for NetworkInterface {
             let name = make_adapter_address_name(adapter_address)?;
             let index = get_adapter_address_index(adapter_address)?;
             let mac_addr = make_mac_address(adapter_address);
+            let status = get_adapter_operstatus(adapter_address);
             let mut network_interface = NetworkInterface {
                 name,
                 addr: Vec::new(),
                 mac_addr,
                 index,
+                status: status, flags: 0,
             };
 
             for current_unicast_address in
@@ -303,6 +313,29 @@ fn get_adapter_address_index(adapter_address: &AdapterAddress) -> Result<u32> {
             "ConvertInterfaceLuidToIndex".to_string(),
             e,
         )),
+    }
+}
+/// Get interface status 
+/// 
+/// reference https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
+/// 
+fn get_adapter_operstatus(adapter_address: &AdapterAddress) -> Status {
+    match adapter_address.OperStatus {
+        1 => Status::Up,
+        2 => Status::Down,
+        3 | 4 | 5 | 6 |7  => Status::Unavailable,
+        _ => Status::Unknown,
+    }
+}
+/// map interface type to libc flags
+/// reference https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
+fn get_adapter_flags(adapter_address: &AdapterAddress) -> i32 {
+    match adapter_address.IfType {
+        1 | 6 | 144 => IFF_ETH,
+        23 | 131 => IFF_TUN,
+        71 => IFF_WIRELESS,
+        24 => IFF_LOOPBACK,
+        _ => 0,
     }
 }
 
