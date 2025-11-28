@@ -134,11 +134,14 @@ impl NetworkInterfaceConfig for NetworkInterface {
             let index = get_adapter_address_index(adapter_address)?;
             let mac_addr = make_mac_address(adapter_address);
             let status = get_adapter_operstatus(adapter_address);
+            let flags =  get_adapter_flags(adapter_address);
             let mut network_interface = NetworkInterface {
                 name,
                 addr: Vec::new(),
                 mac_addr,
-                status, flags: get_adapter_flags(adapter_address),
+                index,
+                status, 
+                flags,
             };
 
             for current_unicast_address in
