@@ -12,7 +12,6 @@ pub type Netmask<T> = Option<T>;
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Status {
     /// Could not retrieve status
@@ -25,29 +24,41 @@ pub enum Status {
     Unavailable,
 }
 
+/// Filter Running interfaces
 #[cfg(not(target_os = "windows"))]
 pub const IFF_RUNNING: i32 = libc::IFF_RUNNING;
+/// Filter Ethernet interfaces, on *unix is can be `IFF_UP | IFF_BROADCAST | IFF_MULTICAST`
 #[cfg(not(target_os = "windows"))]
 pub const IFF_ETH: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAST;
+/// Filter Wireless interfaces sometimes it sames as Eth
 #[cfg(not(target_os = "windows"))]
 pub const IFF_WIRELESS: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAST;
+/// Filter out VPN interfaces. Note! This is only a hypothesis.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_VPN: i32 = libc::IFF_UP | libc::IFF_POINTOPOINT | libc::IFF_NOARP;
+///Filter out TUN interfaces. Note! This is only a hypothesis.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_TUN: i32 = libc::IFF_UP | libc::IFF_POINTOPOINT;
+///Filter out LOOPBACK interfaces.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_LOOPBACK: i32 = libc::IFF_UP | libc::IFF_LOOPBACK;
 
+/// Filter Running deivces
 #[cfg(target_os = "windows")]
 pub const IFF_RUNNING: i32 = 0x40;
+/// Filter Ethernet interfaces, on *unix is can be `IFF_UP | IFF_BROADCAST | IFF_MULTICAST`
 #[cfg(target_os = "windows")]
 pub const IFF_ETH: i32 = 0x1 | 0x2 | 0x1000;
+/// Filter Wireless interfaces sometimes it sames as Eth
 #[cfg(target_os = "windows")]
 pub const IFF_WIRELESS: i32 = 0x1 | 0x2 | 0x1000;
+/// Filter out VPN interfaces. Note! This is only a hypothesis.
 #[cfg(target_os = "windows")]
 pub const IFF_VPN: i32 = 0x1 | 0x10 | 0x80;
+///Filter out TUN interfaces. Note! This is only a hypothesis.
 #[cfg(target_os = "windows")]
-pub const IFF_TUN: i32 = 0x1 | 0x10 ;
+pub const IFF_TUN: i32 = 0x1 | 0x10;
+///Filter out LOOPBACK interfaces.
 #[cfg(target_os = "windows")]
 pub const IFF_LOOPBACK: i32 = 0x1 | 0x8;
 
@@ -69,7 +80,6 @@ pub struct NetworkInterface {
     pub status: Status,
     /// Interface's flags
     pub(crate) flags: i32,
-    
 }
 
 /// Network interface address
@@ -160,7 +170,7 @@ impl NetworkInterface {
     pub fn with_mac_addr(self, mac_addr: Option<String>) -> Self {
         Self { mac_addr, ..self }
     }
-    
+
     pub fn is_up(&self) -> bool {
         self.status == Status::Up
     }
