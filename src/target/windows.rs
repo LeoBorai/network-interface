@@ -26,7 +26,10 @@ use winapi::{
 
 use crate::utils::hex::HexSlice;
 use crate::utils::ffialloc::FFIAlloc;
-use crate::{IFF_ETH, IFF_WIRELESS, IFF_TUN, IFF_LOOPBACK, Addr, Error, NetworkInterface, Status, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr};
+use crate::{
+    IFF_ETH, IFF_WIRELESS, IFF_TUN, IFF_LOOPBACK, Addr, Error, NetworkInterface, Status,
+    NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr,
+};
 use crate::interface::Netmask;
 
 /// An alias for `IP_ADAPTER_ADDRESSES`
@@ -68,12 +71,15 @@ iterable_raw_pointer!(IP_ADAPTER_PREFIX, Next);
 
 impl NetworkInterfaceConfig for NetworkInterface {
     fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Vec<NetworkInterface> {
-        netifs.into_iter().filter(|netif| {
-            if netif.flags == 0 || flags == 0 {
-                return true;
-            }
-            netif.flags & flags == flags
-        }).collect()
+        netifs
+            .into_iter()
+            .filter(|netif| {
+                if netif.flags == 0 || flags == 0 {
+                    return true;
+                }
+                netif.flags & flags == flags
+            })
+            .collect()
     }
 
     fn show() -> Result<Vec<NetworkInterface>> {
@@ -134,13 +140,13 @@ impl NetworkInterfaceConfig for NetworkInterface {
             let index = get_adapter_address_index(adapter_address)?;
             let mac_addr = make_mac_address(adapter_address);
             let status = get_adapter_operstatus(adapter_address);
-            let flags =  get_adapter_flags(adapter_address);
+            let flags = get_adapter_flags(adapter_address);
             let mut network_interface = NetworkInterface {
                 name,
                 addr: Vec::new(),
                 mac_addr,
                 index,
-                status, 
+                status,
                 flags,
             };
 
@@ -318,15 +324,15 @@ fn get_adapter_address_index(adapter_address: &AdapterAddress) -> Result<u32> {
         )),
     }
 }
-/// Get interface status 
-/// 
+/// Get interface status
+///
 /// reference https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
-/// 
+///
 fn get_adapter_operstatus(adapter_address: &AdapterAddress) -> Status {
     match adapter_address.OperStatus {
         1 => Status::Up,
         2 => Status::Down,
-        3 | 4 | 5 | 6 | 7  => Status::Unavailable,
+        3 | 4 | 5 | 6 | 7 => Status::Unavailable,
         _ => Status::Unknown,
     }
 }
