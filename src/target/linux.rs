@@ -3,7 +3,7 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 use std::slice::from_raw_parts;
 
 use libc::{
-    sockaddr_in, sockaddr_in6, strlen, AF_INET, AF_INET6, if_nametoindex, sockaddr_ll, AF_PACKET,SIOCSIFFLAGS
+    sockaddr_in, sockaddr_in6, strlen, AF_INET, AF_INET6, if_nametoindex, sockaddr_ll, AF_PACKET
 };
 
 use crate::target::getifaddrs;
@@ -12,14 +12,15 @@ use crate::utils::{ipv4_from_in_addr, ipv6_from_in6_addr, make_ipv4_netmask, mak
 
 impl NetworkInterfaceConfig for NetworkInterface {
     
-    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Result<Vec<NetworkInterface>> {
-        Ok(netifs.into_iter().filter(|netif| {
-            if netif.flags == 0 || flags == 0{
+    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Vec<NetworkInterface> {
+        netifs.into_iter().filter(|netif| {
+            if flags == 0{
                 return true;
             }
             netif.flags & flags == flags
-        }).collect())
+        }).collect()
     }
+
     fn show() -> Result<Vec<NetworkInterface>> {
         let mut network_interfaces: HashMap<String, NetworkInterface> = HashMap::new();
 
@@ -155,13 +156,7 @@ fn netifa_index(netifa: &libc::ifaddrs) -> u32 {
 
     unsafe { if_nametoindex(name) }
 }
-/// Filters network interfaces based on the provided flags
-/// 
-/// ## References
-/// https://man7.org/linux/man-pages/man7/netdevice.7.html
-fn filter(ifas: &Vec<NetworkInterface>,flags: i32) -> Vec<NetworkInterface> {
-    ifas.into_iter().filter(|netifa| filter(netifa.ifa_flags, flags)).cloned().collect()
-}
+
 /// Maps the flags to a human readable status
 /// 
 /// ## References

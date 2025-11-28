@@ -26,7 +26,7 @@ use winapi::{
 
 use crate::utils::hex::HexSlice;
 use crate::utils::ffialloc::FFIAlloc;
-use crate::{IFF_ETH, IFF_WIRELESS, IFF_TUN,IFF_LOOPBACK, Addr, Error, NetworkInterface, Status, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr};
+use crate::{IFF_ETH, IFF_WIRELESS, IFF_TUN, IFF_LOOPBACK, Addr, Error, NetworkInterface, Status, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr};
 use crate::interface::Netmask;
 
 /// An alias for `IP_ADAPTER_ADDRESSES`
@@ -75,6 +75,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
             netif.flags & flags == flags
         }).collect()
     }
+
     fn show() -> Result<Vec<NetworkInterface>> {
         // Allocate a 15 KB buffer to start with.
         let mut buffer_size: u32 = 15000;
@@ -137,8 +138,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                 name,
                 addr: Vec::new(),
                 mac_addr,
-                index,
-                status: status, flags: get_adapter_flags(adapter_address),
+                status, flags: get_adapter_flags(adapter_address),
             };
 
             for current_unicast_address in
@@ -323,7 +323,7 @@ fn get_adapter_operstatus(adapter_address: &AdapterAddress) -> Status {
     match adapter_address.OperStatus {
         1 => Status::Up,
         2 => Status::Down,
-        3 | 4 | 5 | 6 |7  => Status::Unavailable,
+        3 | 4 | 5 | 6 | 7  => Status::Unavailable,
         _ => Status::Unknown,
     }
 }

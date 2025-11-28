@@ -10,12 +10,19 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 /// representing the IP for a Network Interface netmask
 pub type Netmask<T> = Option<T>;
 
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Status {
-    Unknown,      // can not get status
+    /// Could not retrieve status
+    Unknown,
+    /// device is up
     Up,
+    /// deivce down, by default you can't get device markd `down`
     Down,
-    Unavailable,  // not up or down
+    // Status is not `up` or `down`
+    Unavailable,
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -153,6 +160,7 @@ impl NetworkInterface {
     pub fn with_mac_addr(self, mac_addr: Option<String>) -> Self {
         Self { mac_addr, ..self }
     }
+    
     pub fn is_up(&self) -> bool {
         self.status == Status::Up
     }
