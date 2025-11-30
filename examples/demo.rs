@@ -1,4 +1,4 @@
-use network_interface::{NetworkInterface, NetworkInterfaceConfig, IFF_TUN, IFF_RUNNING};
+use network_interface::{NetworkInterface, NetworkInterfaceConfig, IFF_TEH, IFF_RUNNING};
 
 fn main() {
     let interfaces =
