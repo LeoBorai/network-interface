@@ -329,6 +329,8 @@ fn get_adapter_address_index(adapter_address: &AdapterAddress) -> Result<u32> {
 /// reference https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
 ///
 fn get_adapter_operstatus(adapter_address: &AdapterAddress) -> Status {
+    //`operstatus` is not a range and does not require a `clippy lint` warning.
+    #![allow(clippy::manual_range_patterns)]
     match adapter_address.OperStatus {
         1 => Status::Up,
         2 => Status::Down,
