@@ -19,9 +19,9 @@ pub trait NetworkInterfaceConfig {
     /// * `flags` - Flags to filter
     /// # Example
     /// ```
-    /// use network_interface::{NetworkInterface, IFF_ETH | IFF_RUNNING};
+    /// use network_interface::{NetworkInterfaceConfig,NetworkInterface, IFF_ETH, IFF_RUNNING};
     /// let ifas = NetworkInterface::show().unwrap();
-    /// let ifas = NetworkInterface::filter(ifas, IFF_VPN | IFF_RUNNING);
+    /// let ifas = NetworkInterface::filter(ifas, IFF_ETH | IFF_RUNNING);
     /// ```
     fn filter(
         ifas: Vec<interface::NetworkInterface>,

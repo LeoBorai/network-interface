@@ -12,7 +12,7 @@ edition = "2018"
 readme = "README.md"
 
 
-[[bin]]
+[[example]]
 name = "demo"
 path = "examples/demo.rs"
 

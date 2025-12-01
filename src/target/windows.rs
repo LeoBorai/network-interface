@@ -16,6 +16,8 @@ use winapi::{
         netioapi::{ConvertLengthToIpv4Mask, ConvertInterfaceLuidToIndex},
         ntdef::ULONG,
         ifdef::IF_LUID,
+        ipifcons::*,
+        ifdef::*,
         winerror,
     },
     um::{
@@ -27,8 +29,8 @@ use winapi::{
 use crate::utils::hex::HexSlice;
 use crate::utils::ffialloc::FFIAlloc;
 use crate::{
-    IFF_ETH, IFF_WIRELESS, IFF_TUN, IFF_LOOPBACK, Addr, Error, NetworkInterface, Status,
-    NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr,
+    IFF_RUNNING, IFF_ETH, IFF_WIRELESS, IFF_TUN, IFF_LOOPBACK, Addr, Error, NetworkInterface,
+    Status, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr,
 };
 use crate::interface::Netmask;
 
@@ -149,7 +151,9 @@ impl NetworkInterfaceConfig for NetworkInterface {
                 status,
                 flags,
             };
-
+            if network_interface.is_up() {
+                network_interface.flags |= IFF_RUNNING;
+            }
             for current_unicast_address in
                 RawPointerWrapper::new(adapter_address.FirstUnicastAddress)
             {
@@ -329,21 +333,22 @@ fn get_adapter_address_index(adapter_address: &AdapterAddress) -> Result<u32> {
 /// reference https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
 ///
 fn get_adapter_operstatus(adapter_address: &AdapterAddress) -> Status {
+    #[allow(nonstandard_style)]
     match adapter_address.OperStatus {
-        1 => Status::Up,
-        2 => Status::Down,
-        3 | 4 | 5 | 6 | 7 => Status::Unavailable,
-        _ => Status::Unknown,
+        IfOperStatusUp => Status::Up,
+        IfOperStatusDown => Status::Down,
+        _ => Status::Unavailable,
     }
 }
 /// map interface type to libc flags
 /// reference https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
 fn get_adapter_flags(adapter_address: &AdapterAddress) -> i32 {
+    #![allow(nonstandard_style)]
     match adapter_address.IfType {
-        1 | 6 | 144 => IFF_ETH,
-        23 | 131 => IFF_TUN,
-        71 => IFF_WIRELESS,
-        24 => IFF_LOOPBACK,
+        IF_TYPE_ETHERNET_CSMACD | IF_TYPE_IEEE80211 => IFF_ETH,
+        IF_TYPE_TUNNEL => IFF_TUN,
+        IF_TYPE_IEEE1394 => IFF_WIRELESS,
+        IF_TYPE_SOFTWARE_LOOPBACK => IFF_LOOPBACK,
         _ => 0,
     }
 }
