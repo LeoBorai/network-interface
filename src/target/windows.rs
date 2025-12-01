@@ -334,6 +334,7 @@ fn get_adapter_address_index(adapter_address: &AdapterAddress) -> Result<u32> {
 ///
 fn get_adapter_operstatus(adapter_address: &AdapterAddress) -> Status {
     #[allow(nonstandard_style)]
+    //`operstatus` is not a range and does not require a `clippy lint` warning.
     match adapter_address.OperStatus {
         IfOperStatusUp => Status::Up,
         IfOperStatusDown => Status::Down,
