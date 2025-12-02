@@ -24,35 +24,35 @@ pub enum Status {
     Unavailable,
 }
 
-/// Filter Running interfaces
+/// Filter Running deivces, on Windows, it has no effect
 #[cfg(not(target_os = "windows"))]
 pub const IFF_RUNNING: i32 = libc::IFF_RUNNING;
-/// Filter Ethernet interfaces, on *unix is can be `IFF_UP | IFF_BROADCAST | IFF_MULTICAST`
+/// Filter Ethernet interfaces, on *unix is can be `IFF_UP | IFF_BROADCAST | IFF_MULTICAST`, on windows adapter type is used
 #[cfg(not(target_os = "windows"))]
 pub const IFF_ETH: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAST;
-/// Filter Wireless interfaces sometimes it sames as Eth
+/// Filter Wireless interfaces sometimes it sames as Eth, on windows adapter `ifType` is used.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_WIRELESS: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAST;
-///Filter out TUN interfaces. Note! This is only a hypothesis.
+///Filter out TUN interfaces. Note! This is only a hypothesis. on windows adapter `ifType` is used.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_TUN: i32 = libc::IFF_UP | libc::IFF_POINTOPOINT;
-///Filter out LOOPBACK interfaces.
+///Filter out LOOPBACK interfaces,on windows adapter `ifType` is used.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_LOOPBACK: i32 = libc::IFF_UP | libc::IFF_LOOPBACK;
 
 /// Filter Running deivces, on Windows, it has no effect
 #[cfg(target_os = "windows")]
 pub const IFF_RUNNING: i32 = 0x40;
-/// Filter Ethernet interfaces, on *unix is can be `IFF_UP | IFF_BROADCAST | IFF_MULTICAST`
+/// Filter Ethernet interfaces, on *unix is can be `IFF_UP | IFF_BROADCAST | IFF_MULTICAST`, on windows adapter `ifType` is used
 #[cfg(target_os = "windows")]
 pub const IFF_ETH: i32 = 0x1;
-/// Filter Wireless interfaces sometimes it sames as Eth
+/// Filter Wireless interfaces sometimes it sames as Eth, on windows adapter `ifType` is used.
 #[cfg(target_os = "windows")]
 pub const IFF_WIRELESS: i32 = 0x2;
-///Filter out TUN interfaces. Note! This is only a hypothesis.
+///Filter out TUN interfaces. Note! This is only a hypothesis. on windows adapter `ifType` is used.
 #[cfg(target_os = "windows")]
 pub const IFF_TUN: i32 = 0x1 | 0x4;
-///Filter out LOOPBACK interfaces.
+///Filter out LOOPBACK interfaces,on windows adapter `ifType` is used.
 #[cfg(target_os = "windows")]
 pub const IFF_LOOPBACK: i32 = 0x8;
 
