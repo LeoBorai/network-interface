@@ -33,9 +33,6 @@ pub const IFF_ETH: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAS
 /// Filter Wireless interfaces sometimes it sames as Eth
 #[cfg(not(target_os = "windows"))]
 pub const IFF_WIRELESS: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAST;
-/// Filter out VPN interfaces. Note! This is only a hypothesis.
-#[cfg(not(target_os = "windows"))]
-pub const IFF_VPN: i32 = libc::IFF_UP | libc::IFF_POINTOPOINT | libc::IFF_NOARP;
 ///Filter out TUN interfaces. Note! This is only a hypothesis.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_TUN: i32 = libc::IFF_UP | libc::IFF_POINTOPOINT;
