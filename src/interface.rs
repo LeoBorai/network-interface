@@ -11,7 +11,6 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 pub type Netmask<T> = Option<T>;
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Status {
     /// Could not retrieve status
