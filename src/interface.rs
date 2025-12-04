@@ -35,7 +35,7 @@ pub const IFF_WIRELESS: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MUL
 ///Filter out TUN interfaces. Note! This is only a hypothesis. on windows adapter `ifType` is used.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_TUN: i32 = libc::IFF_UP | libc::IFF_POINTOPOINT;
-///Filter out LOOPBACK interfaces,on windows adapter `ifType` is used.
+/// Filter out LOOPBACK interfaces,on windows adapter `ifType` is used.
 #[cfg(not(target_os = "windows"))]
 pub const IFF_LOOPBACK: i32 = libc::IFF_UP | libc::IFF_LOOPBACK;
 
