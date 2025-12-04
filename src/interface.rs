@@ -17,7 +17,7 @@ pub enum Status {
     Unknown,
     /// device is up
     Up,
-    /// deivce down, by default you can't get device markd `down`
+    /// deivce down, by default you can't get device marked `down`
     Down,
     // Status is not `up` or `down`
     Unavailable,
