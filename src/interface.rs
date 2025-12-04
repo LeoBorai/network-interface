@@ -48,7 +48,7 @@ pub const IFF_ETH: i32 = 0x1;
 /// Filter Wireless interfaces sometimes it sames as Eth, on windows adapter `ifType` is used.
 #[cfg(target_os = "windows")]
 pub const IFF_WIRELESS: i32 = 0x2;
-///Filter out TUN interfaces. Note! This is only a hypothesis. on windows adapter `ifType` is used.
+/// Filter out TUN interfaces. Note! This is only a hypothesis. on windows adapter `ifType` is used.
 #[cfg(target_os = "windows")]
 pub const IFF_TUN: i32 = 0x1 | 0x4;
 ///Filter out LOOPBACK interfaces,on windows adapter `ifType` is used.
