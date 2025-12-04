@@ -26,7 +26,7 @@ pub enum Status {
 /// Filter Running deivces, on Windows, it has no effect
 #[cfg(not(target_os = "windows"))]
 pub const IFF_RUNNING: i32 = libc::IFF_RUNNING;
-/// Filter Ethernet interfaces, on *unix is can be `IFF_UP | IFF_BROADCAST | IFF_MULTICAST`, on windows adapter type is used
+/// Filter Ethernet interfaces, on *unix can be `IFF_UP | IFF_BROADCAST | IFF_MULTICAST`, on windows adapter type is used
 #[cfg(not(target_os = "windows"))]
 pub const IFF_ETH: i32 = libc::IFF_UP | libc::IFF_BROADCAST | libc::IFF_MULTICAST;
 /// Filter Wireless interfaces sometimes it sames as Eth, on windows adapter `ifType` is used.
