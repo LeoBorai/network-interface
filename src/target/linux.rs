@@ -7,10 +7,22 @@ use libc::{
 };
 
 use crate::target::getifaddrs;
-use crate::{Error, NetworkInterface, NetworkInterfaceConfig, Result};
+use crate::{Error, Status, NetworkInterface, NetworkInterfaceConfig, Result};
 use crate::utils::{ipv4_from_in_addr, ipv6_from_in6_addr, make_ipv4_netmask, make_ipv6_netmask};
 
 impl NetworkInterfaceConfig for NetworkInterface {
+    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Vec<NetworkInterface> {
+        netifs
+            .into_iter()
+            .filter(|netif| {
+                if flags == 0 {
+                    return true;
+                }
+                netif.flags & flags == flags
+            })
+            .collect()
+    }
+
     fn show() -> Result<Vec<NetworkInterface>> {
         let mut network_interfaces: HashMap<String, NetworkInterface> = HashMap::new();
 
@@ -21,7 +33,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
             } else {
                 unsafe { (*netifa_addr).sa_family as i32 }
             };
-
+            let status = netifa_status(&netifa);
             let mut network_interface = match netifa_family {
                 AF_PACKET => {
                     let name = make_netifa_name(&netifa)?;
@@ -32,6 +44,8 @@ impl NetworkInterfaceConfig for NetworkInterface {
                         addr: Vec::new(),
                         mac_addr: Some(mac),
                         index,
+                        status,
+                        flags: netifa.ifa_flags as i32,
                     }
                 }
                 AF_INET => {
@@ -42,7 +56,15 @@ impl NetworkInterfaceConfig for NetworkInterface {
                     let netmask = make_ipv4_netmask(&netifa);
                     let addr = ipv4_from_in_addr(&internet_address)?;
                     let broadcast = make_ipv4_broadcast_addr(&netifa)?;
-                    NetworkInterface::new_afinet(name.as_str(), addr, netmask, broadcast, index)
+                    NetworkInterface::new_afinet(
+                        name.as_str(),
+                        addr,
+                        netmask,
+                        broadcast,
+                        index,
+                        status,
+                        netifa.ifa_flags as i32,
+                    )
                 }
                 AF_INET6 => {
                     let socket_addr = netifa_addr as *mut sockaddr_in6;
@@ -52,7 +74,15 @@ impl NetworkInterfaceConfig for NetworkInterface {
                     let netmask = make_ipv6_netmask(&netifa);
                     let addr = ipv6_from_in6_addr(&internet_address)?;
                     let broadcast = make_ipv6_broadcast_addr(&netifa)?;
-                    NetworkInterface::new_afinet6(name.as_str(), addr, netmask, broadcast, index)
+                    NetworkInterface::new_afinet6(
+                        name.as_str(),
+                        addr,
+                        netmask,
+                        broadcast,
+                        index,
+                        status,
+                        netifa.ifa_flags as i32,
+                    )
                 }
                 _ => continue,
             };
@@ -143,4 +173,18 @@ fn netifa_index(netifa: &libc::ifaddrs) -> u32 {
     let name = netifa.ifa_name as *const libc::c_char;
 
     unsafe { if_nametoindex(name) }
+}
+
+/// Maps the flags to a human readable status
+///
+/// ## References
+/// https://man7.org/linux/man-pages/man7/netdevice.7.html
+fn netifa_status(netifa: &libc::ifaddrs) -> Status {
+    if netifa.ifa_flags as i32 & libc::IFF_RUNNING == libc::IFF_RUNNING {
+        Status::Up
+    } else if netifa.ifa_flags as i32 & libc::IFF_UP == libc::IFF_UP {
+        Status::Down
+    } else {
+        Status::Unavailable
+    }
 }
