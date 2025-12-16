@@ -10,7 +10,8 @@ pub mod hex;
     target_os = "freebsd",
     target_os = "openbsd",
     target_os = "netbsd",
-    target_os = "dragonfly"
+    target_os = "dragonfly",
+    target_os = "illumos",
 ))]
 mod unix;
 
@@ -26,6 +27,7 @@ pub(crate) mod ffialloc;
     target_os = "freebsd",
     target_os = "openbsd",
     target_os = "netbsd",
-    target_os = "dragonfly"
+    target_os = "dragonfly",
+    target_os = "illumos",
 ))]
 pub use unix::*;
