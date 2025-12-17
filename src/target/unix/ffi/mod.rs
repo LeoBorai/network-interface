@@ -7,7 +7,8 @@ use libc::ifaddrs;
     target_os = "freebsd",
     target_os = "openbsd",
     target_os = "netbsd",
-    target_os = "dragonfly"
+    target_os = "dragonfly",
+    target_os = "illumos",
 ))]
 extern "C" {
     pub fn lladdr(ptr: *mut ifaddrs) -> *const u8;

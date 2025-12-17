@@ -13,7 +13,8 @@ pub use linux::*;
     target_os = "freebsd",
     target_os = "openbsd",
     target_os = "netbsd",
-    target_os = "dragonfly"
+    target_os = "dragonfly",
+    target_os = "illumos",
 ))]
 mod unix;
 
@@ -24,7 +25,8 @@ mod unix;
     target_os = "freebsd",
     target_os = "openbsd",
     target_os = "netbsd",
-    target_os = "dragonfly"
+    target_os = "dragonfly",
+    target_os = "illumos",
 ))]
 pub use unix::*;
 
