@@ -22,6 +22,8 @@ pub struct NetworkInterface {
     pub mac_addr: Option<String>,
     /// Interface's index
     pub index: u32,
+    /// Is the interface a loopback or similar interface that is not remotely accessible
+    pub internal: bool,
 }
 
 /// Network interface address
@@ -65,6 +67,7 @@ impl NetworkInterface {
         netmask: Netmask<Ipv4Addr>,
         broadcast: Option<Ipv4Addr>,
         index: u32,
+        internal: bool,
     ) -> NetworkInterface {
         let ifaddr_v4 = V4IfAddr {
             ip: addr,
@@ -77,6 +80,7 @@ impl NetworkInterface {
             addr: vec![Addr::V4(ifaddr_v4)],
             mac_addr: None,
             index,
+            internal,
         }
     }
 
@@ -86,6 +90,7 @@ impl NetworkInterface {
         netmask: Netmask<Ipv6Addr>,
         broadcast: Option<Ipv6Addr>,
         index: u32,
+        internal: bool,
     ) -> NetworkInterface {
         let ifaddr_v6 = V6IfAddr {
             ip: addr,
@@ -98,6 +103,7 @@ impl NetworkInterface {
             addr: vec![Addr::V6(ifaddr_v6)],
             mac_addr: None,
             index,
+            internal,
         }
     }
 

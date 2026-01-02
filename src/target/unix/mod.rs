@@ -5,7 +5,9 @@ use std::collections::HashMap;
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::slice::from_raw_parts;
 
-use libc::{AF_INET, AF_INET6, sockaddr_in, sockaddr_in6, strlen, AF_LINK, if_nametoindex};
+use libc::{
+    AF_INET, AF_INET6, AF_LINK, IFF_LOOPBACK, if_nametoindex, sockaddr_in, sockaddr_in6, strlen,
+};
 
 use crate::target::ffi::lladdr;
 use crate::target::getifaddrs;
@@ -24,6 +26,8 @@ impl NetworkInterfaceConfig for NetworkInterface {
                 unsafe { (*netifa_addr).sa_family as i32 }
             };
 
+            let internal = &netifa.ifa_flags & IFF_LOOPBACK as u32 != 0;
+
             let mut network_interface = match netifa_family {
                 AF_LINK => {
                     let name = make_netifa_name(&netifa)?;
@@ -34,6 +38,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                         mac_addr: Some(mac),
                         addr: Vec::new(),
                         index,
+                        internal,
                     }
                 }
                 AF_INET => {
@@ -44,7 +49,14 @@ impl NetworkInterfaceConfig for NetworkInterface {
                     let netmask = make_ipv4_netmask(&netifa);
                     let addr = ipv4_from_in_addr(&internet_address)?;
                     let broadcast = make_ipv4_broadcast_addr(&netifa)?;
-                    NetworkInterface::new_afinet(name.as_str(), addr, netmask, broadcast, index)
+                    NetworkInterface::new_afinet(
+                        name.as_str(),
+                        addr,
+                        netmask,
+                        broadcast,
+                        index,
+                        internal,
+                    )
                 }
                 AF_INET6 => {
                     let socket_addr = netifa_addr as *mut sockaddr_in6;
@@ -54,7 +66,14 @@ impl NetworkInterfaceConfig for NetworkInterface {
                     let netmask = make_ipv6_netmask(&netifa);
                     let addr = ipv6_from_in6_addr(&internet_address)?;
                     let broadcast = make_ipv6_broadcast_addr(&netifa)?;
-                    NetworkInterface::new_afinet6(name.as_str(), addr, netmask, broadcast, index)
+                    NetworkInterface::new_afinet6(
+                        name.as_str(),
+                        addr,
+                        netmask,
+                        broadcast,
+                        index,
+                        internal,
+                    )
                 }
                 _ => continue,
             };
