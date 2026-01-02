@@ -23,7 +23,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                 unsafe { (*netifa_addr).sa_family as i32 }
             };
 
-            let internal = &netifa.ifa_flags & IFF_LOOPBACK as u32 != 0;
+            let internal = netifa.ifa_flags & IFF_LOOPBACK as u32 != 0;
 
             let mut network_interface = match netifa_family {
                 AF_PACKET => {
