@@ -8,6 +8,7 @@ use std::iter::Iterator;
 use std::marker::PhantomData;
 
 use libc::{free, malloc, wchar_t, wcslen};
+use winapi::shared::ipifcons::IF_TYPE_SOFTWARE_LOOPBACK;
 use winapi::{
     ctypes::c_ulong,
     shared::{
@@ -124,11 +125,13 @@ impl NetworkInterfaceConfig for NetworkInterface {
             let name = make_adapter_address_name(adapter_address)?;
             let index = get_adapter_address_index(adapter_address)?;
             let mac_addr = make_mac_address(adapter_address);
+            let internal = adapter_address.IfType == IF_TYPE_SOFTWARE_LOOPBACK;
             let mut network_interface = NetworkInterface {
                 name,
                 addr: Vec::new(),
                 mac_addr,
                 index,
+                internal,
             };
 
             for current_unicast_address in
