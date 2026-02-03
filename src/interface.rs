@@ -73,6 +73,8 @@ pub struct NetworkInterface {
     pub status: Status,
     /// Interface's flags
     pub(crate) flags: i32,
+    /// Is the interface a loopback or similar interface that is not remotely accessible
+    pub internal: bool,
 }
 
 /// Network interface address
@@ -118,6 +120,7 @@ impl NetworkInterface {
         index: u32,
         status: Status,
         flags: i32,
+        internal: bool,
     ) -> NetworkInterface {
         let ifaddr_v4 = V4IfAddr {
             ip: addr,
@@ -132,6 +135,7 @@ impl NetworkInterface {
             index,
             status,
             flags,
+            internal,
         }
     }
 
@@ -143,6 +147,7 @@ impl NetworkInterface {
         index: u32,
         status: Status,
         flags: i32,
+        internal: bool,
     ) -> NetworkInterface {
         let ifaddr_v6 = V6IfAddr {
             ip: addr,
@@ -157,6 +162,7 @@ impl NetworkInterface {
             index,
             status,
             flags,
+            internal,
         }
     }
 

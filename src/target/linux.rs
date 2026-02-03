@@ -3,7 +3,8 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 use std::slice::from_raw_parts;
 
 use libc::{
-    sockaddr_in, sockaddr_in6, strlen, AF_INET, AF_INET6, if_nametoindex, sockaddr_ll, AF_PACKET,
+    AF_INET, AF_INET6, AF_PACKET, IFF_LOOPBACK, if_nametoindex, sockaddr_in, sockaddr_in6,
+    sockaddr_ll, strlen,
 };
 
 use crate::target::getifaddrs;
@@ -34,6 +35,9 @@ impl NetworkInterfaceConfig for NetworkInterface {
                 unsafe { (*netifa_addr).sa_family as i32 }
             };
             let status = netifa_status(&netifa);
+
+            let internal = netifa.ifa_flags & IFF_LOOPBACK as u32 != 0;
+
             let mut network_interface = match netifa_family {
                 AF_PACKET => {
                     let name = make_netifa_name(&netifa)?;
@@ -46,6 +50,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                         index,
                         status,
                         flags: netifa.ifa_flags as i32,
+                        internal,
                     }
                 }
                 AF_INET => {
@@ -64,6 +69,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                         index,
                         status,
                         netifa.ifa_flags as i32,
+                        internal,
                     )
                 }
                 AF_INET6 => {
@@ -82,6 +88,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                         index,
                         status,
                         netifa.ifa_flags as i32,
+                        internal,
                     )
                 }
                 _ => continue,

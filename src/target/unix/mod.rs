@@ -5,7 +5,9 @@ use std::collections::HashMap;
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::slice::from_raw_parts;
 
-use libc::{AF_INET, AF_INET6, sockaddr_in, sockaddr_in6, strlen, AF_LINK, if_nametoindex};
+use libc::{
+    AF_INET, AF_INET6, AF_LINK, IFF_LOOPBACK, if_nametoindex, sockaddr_in, sockaddr_in6, strlen,
+};
 
 use crate::target::ffi::lladdr;
 use crate::target::getifaddrs;
@@ -34,6 +36,9 @@ impl NetworkInterfaceConfig for NetworkInterface {
             } else {
                 unsafe { (*netifa_addr).sa_family as i32 }
             };
+
+            let internal = netifa.ifa_flags & IFF_LOOPBACK as u32 != 0;
+
             let mut network_interface = match netifa_family {
                 AF_LINK => {
                     let name = make_netifa_name(&netifa)?;
@@ -47,6 +52,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                         index,
                         status,
                         flags: netifa.ifa_flags as i32,
+                        internal,
                     }
                 }
                 AF_INET => {
@@ -66,6 +72,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                         index,
                         status,
                         netifa.ifa_flags as i32,
+                        internal,
                     )
                 }
                 AF_INET6 => {
@@ -85,6 +92,7 @@ impl NetworkInterfaceConfig for NetworkInterface {
                         index,
                         status,
                         netifa.ifa_flags as i32,
+                        internal,
                     )
                 }
                 _ => continue,

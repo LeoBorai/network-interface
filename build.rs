@@ -10,6 +10,7 @@ fn main() {
         const TARGET_OPENBSD: &str = "openbsd";
         const TARGET_NETBSD: &str = "netbsd";
         const TARGET_DRAGONFLY: &str = "dragonfly";
+        const TARGET_ILLUMOS: &str = "illumos";
 
         // check cross-compile target. Only build lladdr.o when actually targeting UNIX.
         let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
@@ -21,6 +22,7 @@ fn main() {
             TARGET_OPENBSD,
             TARGET_NETBSD,
             TARGET_DRAGONFLY,
+            TARGET_ILLUMOS,
         ]
         .contains(&target_os.as_str())
         {
