@@ -17,17 +17,22 @@ use winapi::{
         netioapi::{ConvertLengthToIpv4Mask, ConvertInterfaceLuidToIndex},
         ntdef::ULONG,
         ifdef::IF_LUID,
+        ipifcons::*,
+        ifdef::*,
         winerror,
     },
     um::{
         iptypes::{IP_ADAPTER_ADDRESSES, IP_ADAPTER_UNICAST_ADDRESS, IP_ADAPTER_PREFIX},
-        iphlpapi::GetAdaptersAddresses,
+        iphlpapi::{GetAdaptersAddresses},
     },
 };
 
 use crate::utils::hex::HexSlice;
 use crate::utils::ffialloc::FFIAlloc;
-use crate::{Addr, Error, NetworkInterface, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr};
+use crate::{
+    IFF_RUNNING, IFF_ETH, IFF_WIRELESS, IFF_TUN, IFF_LOOPBACK, Addr, Error, NetworkInterface,
+    Status, NetworkInterfaceConfig, Result, V4IfAddr, V6IfAddr,
+};
 use crate::interface::Netmask;
 
 /// An alias for `IP_ADAPTER_ADDRESSES`
@@ -68,6 +73,18 @@ iterable_raw_pointer!(IP_ADAPTER_UNICAST_ADDRESS, Next);
 iterable_raw_pointer!(IP_ADAPTER_PREFIX, Next);
 
 impl NetworkInterfaceConfig for NetworkInterface {
+    fn filter(netifs: Vec<NetworkInterface>, flags: i32) -> Vec<NetworkInterface> {
+        netifs
+            .into_iter()
+            .filter(|netif| {
+                if netif.flags == 0 || flags == 0 {
+                    return true;
+                }
+                netif.flags & flags == flags
+            })
+            .collect()
+    }
+
     fn show() -> Result<Vec<NetworkInterface>> {
         // Allocate a 15 KB buffer to start with.
         let mut buffer_size: u32 = 15000;
@@ -125,15 +142,21 @@ impl NetworkInterfaceConfig for NetworkInterface {
             let name = make_adapter_address_name(adapter_address)?;
             let index = get_adapter_address_index(adapter_address)?;
             let mac_addr = make_mac_address(adapter_address);
+            let status = get_adapter_operstatus(adapter_address);
+            let flags = get_adapter_flags(adapter_address);
             let internal = adapter_address.IfType == IF_TYPE_SOFTWARE_LOOPBACK;
             let mut network_interface = NetworkInterface {
                 name,
                 addr: Vec::new(),
                 mac_addr,
                 index,
+                status,
+                flags,
                 internal,
             };
-
+            if network_interface.is_up() {
+                network_interface.flags |= IFF_RUNNING;
+            }
             for current_unicast_address in
                 RawPointerWrapper::new(adapter_address.FirstUnicastAddress)
             {
@@ -306,6 +329,31 @@ fn get_adapter_address_index(adapter_address: &AdapterAddress) -> Result<u32> {
             "ConvertInterfaceLuidToIndex".to_string(),
             e,
         )),
+    }
+}
+/// Get interface status
+///
+/// reference https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
+///
+fn get_adapter_operstatus(adapter_address: &AdapterAddress) -> Status {
+    #[allow(nonstandard_style)]
+    //`operstatus` is not a range and does not require a `clippy lint` warning.
+    match adapter_address.OperStatus {
+        IfOperStatusUp => Status::Up,
+        IfOperStatusDown => Status::Down,
+        _ => Status::Unavailable,
+    }
+}
+/// map interface type to libc flags
+/// reference https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_addresses_lh
+fn get_adapter_flags(adapter_address: &AdapterAddress) -> i32 {
+    #![allow(nonstandard_style)]
+    match adapter_address.IfType {
+        IF_TYPE_ETHERNET_CSMACD | IF_TYPE_IEEE80211 => IFF_ETH,
+        IF_TYPE_TUNNEL => IFF_TUN,
+        IF_TYPE_IEEE1394 => IFF_WIRELESS,
+        IF_TYPE_SOFTWARE_LOOPBACK => IFF_LOOPBACK,
+        _ => 0,
     }
 }
 

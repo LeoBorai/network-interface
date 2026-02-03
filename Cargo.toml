@@ -5,11 +5,16 @@ version = "2.0.5"
 repository = "https://github.com/EstebanBorai/network-interface"
 categories = ["web-programming", "network-programming"]
 homepage = "https://github.com/EstebanBorai/network-interface"
-keywords = ["network", "interfaces", "ip", "web", "network"]
+keywords = ["network", "interfaces", "ip", "web"]
 license = "MIT OR Apache-2.0"
 authors = ["Esteban Borai <estebanborai@gmail.com>"]
 edition = "2018"
 readme = "README.md"
+
+
+[[example]]
+name = "demo"
+path = "examples/demo.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
