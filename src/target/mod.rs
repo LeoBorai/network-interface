@@ -6,6 +6,14 @@ mod linux;
 #[cfg(any(target_os = "android", target_os = "linux"))]
 pub use linux::*;
 
+#[allow(unused_imports)]
+#[cfg(target_os = "hurd")]
+mod hurd;
+
+#[allow(unused_imports)]
+#[cfg(target_os = "hurd")]
+pub use hurd::*;
+
 #[cfg(any(
     target_os = "macos",
     target_os = "ios",
